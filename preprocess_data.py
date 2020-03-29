@@ -19,10 +19,10 @@ def replace_emojis(doc):
     doc = emoji.demojize(doc)
     return doc
 
-train_texts_data_path = "data/joy/train/joy_train_input.txt"
-train_scores_data_path = "data/joy/train/joy_train_target.txt" 
-dev_texts_data_path = "data/joy/dev/joy_dev_input.txt"
-dev_scores_data_path = "data/joy/dev/joy_dev_target.txt"
+train_texts_data_path = "data/anger/train/anger_train_input.txt"
+train_scores_data_path = "data/anger/train/anger_train_target.txt" 
+dev_texts_data_path = "data/anger/dev/anger_dev_input.txt"
+dev_scores_data_path = "data/anger/dev/anger_dev_target.txt"
 
 with open(train_texts_data_path) as f_train:
     train_texts_content = f_train.readlines()
@@ -71,4 +71,4 @@ pre_trained_embeddings = loadGloveModel("data/embeddings/glove.twitter.27B.100d.
 vec.extract_embeddings(pre_trained_embeddings, 100)
 
 import pickle, os
-pickle.dump(vec, open("data/vectorizer.pkl", 'wb'))
+pickle.dump(vec, open("data/vectorizer_anger.pkl", 'wb'))
