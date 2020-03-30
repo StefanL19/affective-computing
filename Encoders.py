@@ -18,9 +18,10 @@ class EncoderRNN(nn.Module) :
             weight[0, :].zero_()
 
             self.embedding = nn.Embedding(vocab_size, embed_size, _weight=weight, padding_idx=0)
-            freeze_layer(self.embedding)
+            #freeze_layer(self.embedding)
             
         else :
+            print("Not setting Embedding")
             self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=0)
 
         self.hidden_size = hidden_size

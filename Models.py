@@ -11,12 +11,12 @@ from model_utils import BatchHolder, get_sorting_index_with_noise_from_lengths
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class Model() :
-    def __init__(self, vocab_size, embed_size, hidden_size, bsize, bidirectional=True, pre_embed=None, use_attention=True, use_lexicons=False, use_emojis=False) :
+    def __init__(self, vocab_size, embed_size, hidden_size, bsize, bidirectional=True, pre_embed=None, use_attention=True, use_lexicons=False, lex_feat_length=None, use_emojis=False) :
         
-        self.encoder = EncoderRNN(vocab_size, embed_size, hidden_size, bidirectional, pre_embed=None)
+        self.encoder = EncoderRNN(vocab_size, embed_size, hidden_size, bidirectional, pre_embed=pre_embed)
         self.encoder_params = list(self.encoder.parameters())
 
-        self.decoder = AttnDecoder(2*hidden_size, 1, use_attention=use_attention, use_lexicons=use_lexicons, use_emojis=use_emojis)
+        self.decoder = AttnDecoder(2*hidden_size, 1, use_attention=use_attention, use_lexicons=use_lexicons, use_emojis=use_emojis, lexicon_feat_length=lex_feat_length)
         self.decoder_params = list(self.decoder.parameters())
 
         self.bsize = bsize
@@ -29,12 +29,14 @@ class Model() :
 
         self.criterion = nn.MSELoss(reduction="mean").to(device)
 
-    def train(self, data_in, target_in, train=True):
+    def train(self, data_in, target_in, data_lexicon, train=True):
         sorting_idx = get_sorting_index_with_noise_from_lengths([len(x) for x in data_in], noise_frac=0.1)
 
         data = [data_in[i] for i in sorting_idx]
 
         target = [target_in[i] for i in sorting_idx]
+
+        lexicon_feat = [data_lexicon[i] for i in sorting_idx]
 
         self.encoder.train()
         self.decoder.train()
@@ -53,8 +55,9 @@ class Model() :
 
         for n in tqdm(batches):
             batch_doc = data[n:n+bsize]
+            batch_lexicon = lexicon_feat[n:n+bsize]
 
-            batch_data = BatchHolder(batch_doc)
+            batch_data = BatchHolder(batch_doc, batch_lexicon)
 
             self.encoder(batch_data)
             self.decoder(batch_data)
@@ -81,7 +84,7 @@ class Model() :
 
         return loss_total*bsize/N, loss_total
 
-    def evaluate(self, data) :
+    def evaluate(self, data, data_lexicon) :
         self.encoder.eval()
         self.decoder.eval()
 
@@ -93,7 +96,9 @@ class Model() :
 
         for n in tqdm(range(0, N, bsize)) :
             batch_doc = data[n:n+bsize]
-            batch_data = BatchHolder(batch_doc)
+            batch_lexicon = data_lexicon[n:n+bsize]
+
+            batch_data = BatchHolder(batch_doc, batch_lexicon)
 
             self.encoder(batch_data)
             self.decoder(batch_data)

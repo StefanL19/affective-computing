@@ -37,7 +37,7 @@ class DataHolder() :
 
 
 class Dataset() :
-    def __init__(self, name, path, bsize=32, min_length=None, max_length=None) :
+    def __init__(self, name, path, bsize=32, train_lexicon_feat_path=None, test_lexicon_feat_path=None, emoji_feat_path=None, min_length=None, max_length=None) :
         self.name = name
         
         self.vec = pickle.load(open(path, 'rb'))
@@ -45,12 +45,18 @@ class Dataset() :
         X, Xt = self.vec.seq_text['train'], self.vec.seq_text['dev'] # these are lists (of lists) of num. insts-length (NOT PADDED)
         y, yt = self.vec.label['train'], self.vec.label['dev']
 
-        X, y = filterbylength(X, y, min_length=min_length, max_length=max_length)
-        Xt, yt = filterbylength(Xt, yt, min_length=min_length, max_length=max_length)
+        X, y = filterbylength(X, y, min_length=0, max_length=1000)
+        Xt, yt = filterbylength(Xt, yt, min_length=0, max_length=1000)
         Xt, yt = sortbylength(Xt, yt)
 
-        self.train_data = DataHolder(X, y)
-        self.test_data = DataHolder(Xt, yt)
+        X_train_lexicon = np.array([])
+        if (train_lexicon_feat_path is not None) and (test_lexicon_feat_path is not None):
+            print("Utilizing Lexicon Features")
+            X_train_lexicon = np.loadtxt(train_lexicon_feat_path)
+            X_test_lexicon = np.loadtxt(test_lexicon_feat_path)
+    
+        self.train_data = DataHolder(X, y, X_train_lexicon)
+        self.test_data = DataHolder(Xt, yt, X_test_lexicon)
         
         self.output_size = 1
         self.save_on_metric = 'roc_auc'

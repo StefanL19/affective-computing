@@ -10,13 +10,15 @@ class AttnDecoder(nn.Module):
                        output_size:int = 1, 
                        use_attention:bool = True,
                        use_lexicons:bool = False,
-                       use_emojis:bool = False) :
+                       use_emojis:bool = False,
+                       lexicon_feat_length:int = None) :
     
         super().__init__()
         self.hidden_size = hidden_size
         self.output_size = output_size
-        self.linear_1 = nn.Linear(hidden_size, output_size)
+    
         self.dropout = nn.Dropout(p=0.3)
+
         self.attention = TanhAttention(hidden_size=self.hidden_size)
 
         # If this is set to False, then the classification will be performed on the output of the last hidden cell
@@ -28,8 +30,14 @@ class AttnDecoder(nn.Module):
         # If this is set to True, then the features coming from the affective lexicons will be utilized
         self.use_lexicons = use_lexicons
 
+        if self.use_lexicons:
+            self.linear_1 = nn.Linear(hidden_size+10, output_size)
+            self.lexicon_layer = nn.Linear(lexicon_feat_length, 10)
+        else:
+            self.linear_1 = nn.Linear(hidden_size, output_size)
+
     def decode(self, predict) :
-        predict = self.dropout(predict)
+        # predict = self.dropout(predict)
         predict = self.linear_1(predict)
         return predict
     
@@ -43,6 +51,13 @@ class AttnDecoder(nn.Module):
             data.attn = attn
         else :
             context = data.last_hidden
-            
+
+        context = self.dropout(context)
+
+        if self.use_lexicons:
+            lexicon_features = self.lexicon_layer(data.lexicon_feats)
+            lexicon_features = nn.functional.relu(lexicon_features)
+            context = torch.cat((context, lexicon_features), dim=1)
+        
         predict = self.decode(context)
         data.predict = predict

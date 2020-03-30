@@ -14,7 +14,7 @@ def get_sorting_index_with_noise_from_lengths(lengths, noise_frac) :
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class BatchHolder() : 
-    def __init__(self, data) :
+    def __init__(self, data, data_lexicon) :
         maxlen = max([len(x) for x in data])
         self.maxlen = maxlen
         self.B = len(data)
@@ -31,6 +31,8 @@ class BatchHolder() :
 
         self.lengths = torch.LongTensor(np.array(lengths)).to(device)
         self.seq = torch.LongTensor(np.array(expanded, dtype='int64')).to(device)
+        self.lexicon_feats = torch.FloatTensor(np.array(data_lexicon, dtype='float64')).to(device)
+
         self.masks = torch.BoolTensor(np.array(masks)).to(device)
 
         self.hidden = None
