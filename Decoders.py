@@ -50,6 +50,7 @@ class AttnDecoder(nn.Module):
             self.emoji_layer = nn.Linear(300, emoji_feat_target_dims)
 
         else:
+            print('Using basic RNN features')
             self.linear_1 = nn.Linear(hidden_size, output_size)
 
     def decode(self, predict) :

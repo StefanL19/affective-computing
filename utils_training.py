@@ -21,6 +21,7 @@ class Trainer() :
         train_data = self.dataset.train_data
         test_data = self.dataset.test_data
 
+        test_metrics = []
         for i in tqdm(range(n_iters)):
             loss_total_batch, loss_total = self.model.train(train_data.X, train_data.y, train_data.lexicon_feat, train_data.emoji_feat)
 
@@ -32,26 +33,9 @@ class Trainer() :
 
             predictions_test = np.array(predictions_test)
 
-            self.metrics(np.array(test_data.y), predictions_test)
-
-            # if self.display_metrics:
-            #     print("TEST METRICS: ")
+            pearson_r = self.metrics(np.array(test_data.y), predictions_test)
             
-            # # Get the value for the metric which should be used for checkpointing
-            # metric = test_metrics[save_on_metric]
+            test_metrics.append(pearson_r[0])
 
-            # if metric > best_metric :
-            #     best_metric = metric
+        return np.max(np.array(test_metrics))
 
-            #     save_model = True
-
-            #     print("Model Saved on ", save_on_metric, metric)
-
-            # else:
-            #     save_model = False
-            #     print("Model not saved on ", save_on_metric, metric)
-
-        # TODO: implement this function
-        #dirname = self.model.save_values(save_model=save_model)
-
-        # TODO: implement model saving

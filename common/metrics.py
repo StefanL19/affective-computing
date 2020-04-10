@@ -16,3 +16,5 @@ def calc_metrics_classification(target, predictions, target_scores=None) :
     print(stats.pearsonr(predictions, target))
     print("Spearmanr: ")
     print(stats.spearmanr(predictions, target))
+
+    return stats.pearsonr(predictions, target)
