@@ -33,8 +33,9 @@ class EncoderRNN(nn.Module) :
 
     def forward(self, data) :
         seq = data.seq
+        seq = seq.to(device)
         lengths = data.lengths
-        embedding = self.embedding(seq).to(device) #(B, L, E)
+        embedding = self.embedding(seq) #(B, L, E)
         packseq = nn.utils.rnn.pack_padded_sequence(embedding, lengths, batch_first=True, enforce_sorted=False)
         output, (h, c) = self.rnn(packseq)
 
