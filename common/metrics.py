@@ -12,9 +12,9 @@ def calc_metrics_classification(target, predictions, target_scores=None) :
     if predictions.shape[-1] == 1 :
         predictions = predictions[:, 0]
 
-    print("Pearsonr: ")
-    print(stats.pearsonr(predictions, target))
-    print("Spearmanr: ")
-    print(stats.spearmanr(predictions, target))
+    # print("Pearsonr: ")
+    # print(stats.pearsonr(predictions, target))
+    # print("Spearmanr: ")
+    # print(stats.spearmanr(predictions, target))
 
     return stats.pearsonr(predictions, target)

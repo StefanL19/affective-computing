@@ -25,9 +25,9 @@ class Trainer() :
         for i in tqdm(range(n_iters)):
             loss_total_batch, loss_total = self.model.train(train_data.X, train_data.y, train_data.lexicon_feat, train_data.emoji_feat)
 
-            print("Finished Training Iteration: ", str(i))
-            print("The Average Loss per batch is: ", loss_total_batch)
-            print("The Total Loss is: ", loss_total)
+            # print("Finished Training Iteration: ", str(i))
+            # print("The Average Loss per batch is: ", loss_total_batch)
+            # print("The Total Loss is: ", loss_total)
 
             predictions_test = self.model.evaluate(test_data.X, test_data.lexicon_feat, test_data.emoji_feat)
 
