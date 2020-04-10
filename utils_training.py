@@ -7,7 +7,7 @@ class Trainer() :
     def __init__(self, dataset, vocab_size, embed_size, hidden_size, bsize): 
         # pass the model config when refactoring
 
-        self.model = Model(vocab_size, embed_size, hidden_size, bsize, pre_embed=dataset.vec.embeddings, use_lexicons=True, lex_feat_length=53)
+        self.model = Model(vocab_size, embed_size, hidden_size, bsize, pre_embed=dataset.vec.embeddings, use_lexicons=False, lex_feat_length=53, use_attention=True)
         self.metrics = calc_metrics_classification
         self.display_metrics = True
         self.dataset = dataset

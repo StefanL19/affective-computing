@@ -11,7 +11,8 @@ class AttnDecoder(nn.Module):
                        use_attention:bool = True,
                        use_lexicons:bool = False,
                        use_emojis:bool = False,
-                       lexicon_feat_length:int = None) :
+                       lexicon_feat_length:int = None,
+                       lexicon_feat_target_dims:int = None) :
     
         super().__init__()
         self.hidden_size = hidden_size
@@ -31,8 +32,8 @@ class AttnDecoder(nn.Module):
         self.use_lexicons = use_lexicons
 
         if self.use_lexicons:
-            self.linear_1 = nn.Linear(hidden_size+10, output_size)
-            self.lexicon_layer = nn.Linear(lexicon_feat_length, 10)
+            self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims, output_size)
+            self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims)
         else:
             self.linear_1 = nn.Linear(hidden_size, output_size)
 
