@@ -72,21 +72,21 @@ class AttnDecoder(nn.Module):
         context = self.dropout(context)
 
         if self.use_lexicons and self.use_emojis:
-            lexicon_features = self.lexicon_layer(data.lexicon_feats)
+            lexicon_features = self.lexicon_layer(data.lexicon_feats.to(device))
             lexicon_features = nn.functional.relu(lexicon_features)
-            emoji_features = self.emoji_layer(data.emoji_feats)
+            emoji_features = self.emoji_layer(data.emoji_feats.to(device))
             emoji_features  = nn.functional.relu(emoji_features)
 
             context = torch.cat((context, lexicon_features, emoji_features), dim=1)
 
         elif self.use_emojis and not self.use_lexicons:
-            emoji_features = self.emoji_layer(data.emoji_feats)
+            emoji_features = self.emoji_layer(data.emoji_feats.to(device))
             emoji_features  = nn.functional.relu(emoji_features)
 
             context = torch.cat((context, emoji_features), dim=1)
         
         elif self.use_lexicons and not self.use_emojis:
-            lexicon_features = self.lexicon_layer(data.lexicon_feats)
+            lexicon_features = self.lexicon_layer(data.lexicon_feats.to(device))
             lexicon_features = nn.functional.relu(lexicon_features)
 
             context = torch.cat((context, lexicon_features), dim=1)

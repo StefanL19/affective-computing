@@ -19,12 +19,12 @@ class EncoderRNN(nn.Module) :
             weight = torch.Tensor(pre_embed)
             weight[0, :].zero_()
 
-            self.embedding = nn.Embedding(vocab_size, embed_size, _weight=weight, padding_idx=0)
+            self.embedding = nn.Embedding(vocab_size, embed_size, _weight=weight, padding_idx=0).to(device)
             #freeze_layer(self.embedding)
             
         else :
             print("Not setting Embedding")
-            self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=0)
+            self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=0).to(device)
 
         self.hidden_size = hidden_size
         self.rnn = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, batch_first=True, bidirectional=bidirectional)
