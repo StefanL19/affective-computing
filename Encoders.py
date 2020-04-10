@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from allennlp.common import Registrable
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
 def freeze_layer(layer):
     for param in layer.parameters():
         param.requires_grad = False
@@ -32,7 +34,7 @@ class EncoderRNN(nn.Module) :
     def forward(self, data) :
         seq = data.seq
         lengths = data.lengths
-        embedding = self.embedding(seq) #(B, L, E)
+        embedding = self.embedding(seq).to(device) #(B, L, E)
         packseq = nn.utils.rnn.pack_padded_sequence(embedding, lengths, batch_first=True, enforce_sorted=False)
         output, (h, c) = self.rnn(packseq)
 
