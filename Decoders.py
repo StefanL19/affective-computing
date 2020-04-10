@@ -12,13 +12,15 @@ class AttnDecoder(nn.Module):
                        use_lexicons:bool = False,
                        use_emojis:bool = False,
                        lexicon_feat_length:int = None,
-                       lexicon_feat_target_dims:int = None) :
+                       lexicon_feat_target_dims:int = None,
+                       emoji_feat_target_dims:int = None,
+                       dropout_prob:float = 0.3) :
     
         super().__init__()
         self.hidden_size = hidden_size
         self.output_size = output_size
-    
-        self.dropout = nn.Dropout(p=0.3)
+
+        self.dropout = nn.Dropout(p=dropout_prob)
 
         self.attention = TanhAttention(hidden_size=self.hidden_size)
 
@@ -31,9 +33,22 @@ class AttnDecoder(nn.Module):
         # If this is set to True, then the features coming from the affective lexicons will be utilized
         self.use_lexicons = use_lexicons
 
-        if self.use_lexicons:
+        if self.use_lexicons and self.use_emojis:
+            print('Using lexicons and emojis')
+            self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims+emoji_feat_target_dims, output_size)
+            self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims)
+            self.emoji_layer = nn.Linear(300, emoji_feat_target_dims)
+        
+        elif self.use_lexicons and not self.use_emojis:
+            print('Using lexicons')
             self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims, output_size)
             self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims)
+        
+        elif self.use_emojis and not self.use_lexicons:
+            print('Using emojis')
+            self.linear_1 = nn.Linear(hidden_size+emoji_feat_target_dims, output_size)
+            self.emoji_layer = nn.Linear(300, emoji_feat_target_dims)
+
         else:
             self.linear_1 = nn.Linear(hidden_size, output_size)
 
@@ -55,10 +70,27 @@ class AttnDecoder(nn.Module):
 
         context = self.dropout(context)
 
-        if self.use_lexicons:
+        if self.use_lexicons and self.use_emojis:
             lexicon_features = self.lexicon_layer(data.lexicon_feats)
             lexicon_features = nn.functional.relu(lexicon_features)
+            emoji_features = self.emoji_layer(data.emoji_feats)
+            emoji_features  = nn.functional.relu(emoji_features)
+
+            context = torch.cat((context, lexicon_features, emoji_features), dim=1)
+
+        elif self.use_emojis and not self.use_lexicons:
+            emoji_features = self.emoji_layer(data.emoji_feats)
+            emoji_features  = nn.functional.relu(emoji_features)
+
+            context = torch.cat((context, emoji_features), dim=1)
+        
+        elif self.use_lexicons and not self.use_emojis:
+            lexicon_features = self.lexicon_layer(data.lexicon_feats)
+            lexicon_features = nn.functional.relu(lexicon_features)
+
             context = torch.cat((context, lexicon_features), dim=1)
+        
+
         
         predict = self.decode(context)
         data.predict = predict

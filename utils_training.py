@@ -4,10 +4,14 @@ from common.metrics import calc_metrics_classification
 import numpy as np
 
 class Trainer() :
-    def __init__(self, dataset, vocab_size, embed_size, hidden_size, bsize): 
+    def __init__(self, dataset, params:dict): 
         # pass the model config when refactoring
 
-        self.model = Model(vocab_size, embed_size, hidden_size, bsize, pre_embed=dataset.vec.embeddings, use_lexicons=False, lex_feat_length=53, use_attention=True)
+        self.model = Model(params['vocab_size'], params['embed_size'], params['hidden_size'], params['bsize'], pre_embed=dataset.vec.embeddings, 
+        use_lexicons=params['use_lexicons'], use_emojis=params['use_emojis'], lex_feat_length=params['lex_feat_length'], 
+        use_attention=params['use_attention'], lexicon_feat_target_dims=params['lexicon_feat_target_dims'], 
+        emoji_feat_target_dims=params['emoji_feat_target_dims'], dropout_prob=params['dropout_prob'])
+
         self.metrics = calc_metrics_classification
         self.display_metrics = True
         self.dataset = dataset
@@ -18,13 +22,13 @@ class Trainer() :
         test_data = self.dataset.test_data
 
         for i in tqdm(range(n_iters)):
-            loss_total_batch, loss_total = self.model.train(train_data.X, train_data.y, train_data.lexicon_feat)
+            loss_total_batch, loss_total = self.model.train(train_data.X, train_data.y, train_data.lexicon_feat, train_data.emoji_feat)
 
             print("Finished Training Iteration: ", str(i))
             print("The Average Loss per batch is: ", loss_total_batch)
             print("The Total Loss is: ", loss_total)
 
-            predictions_test = self.model.evaluate(test_data.X, test_data.lexicon_feat)
+            predictions_test = self.model.evaluate(test_data.X, test_data.lexicon_feat, test_data.emoji_feat)
 
             predictions_test = np.array(predictions_test)
 

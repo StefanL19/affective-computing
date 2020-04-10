@@ -37,7 +37,11 @@ class DataHolder() :
 
 
 class Dataset() :
-    def __init__(self, name, path, bsize=32, train_lexicon_feat_path=None, test_lexicon_feat_path=None, emoji_feat_path=None, min_length=None, max_length=None) :
+    def __init__(self, name, path, bsize=32, train_lexicon_feat_path=None, 
+    test_lexicon_feat_path=None, emoji_feat_path=None, min_length=None, max_length=None,
+    train_emoji_feat_path=None,
+    test_emoji_feat_path=None) :
+
         self.name = name
         
         self.vec = pickle.load(open(path, 'rb'))
@@ -49,14 +53,23 @@ class Dataset() :
         Xt, yt = filterbylength(Xt, yt, min_length=0, max_length=1000)
         Xt, yt = sortbylength(Xt, yt)
 
+
         X_train_lexicon = np.array([])
+        X_test_lexicon = np.array([])
         if (train_lexicon_feat_path is not None) and (test_lexicon_feat_path is not None):
             print("Utilizing Lexicon Features")
             X_train_lexicon = np.loadtxt(train_lexicon_feat_path)
             X_test_lexicon = np.loadtxt(test_lexicon_feat_path)
-    
-        self.train_data = DataHolder(X, y, X_train_lexicon)
-        self.test_data = DataHolder(Xt, yt, X_test_lexicon)
+        
+        X_train_emoji_feats = np.array([])
+        X_test_emoji_feats = np.array([])
+        if (train_emoji_feat_path is not None) and (test_emoji_feat_path is not None):
+            print("Utilizing Emoji Features")
+            X_train_emoji_feats = np.loadtxt(train_emoji_feat_path)
+            X_test_emoji_feats = np.loadtxt(test_emoji_feat_path)
+
+        self.train_data = DataHolder(X, y, X_train_lexicon, X_train_emoji_feats)
+        self.test_data = DataHolder(Xt, yt, X_test_lexicon, X_test_emoji_feats)
         
         self.output_size = 1
         self.save_on_metric = 'roc_auc'
