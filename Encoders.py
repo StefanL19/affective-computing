@@ -27,7 +27,7 @@ class EncoderRNN(nn.Module) :
             self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=0).to(device)
 
         self.hidden_size = hidden_size
-        self.rnn = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, batch_first=True, bidirectional=bidirectional)
+        self.rnn = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, batch_first=True, bidirectional=bidirectional).to(device)
 
         self.output_size = self.hidden_size * 2
 

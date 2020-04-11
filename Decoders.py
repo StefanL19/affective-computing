@@ -35,23 +35,23 @@ class AttnDecoder(nn.Module):
 
         if self.use_lexicons and self.use_emojis:
             print('Using lexicons and emojis')
-            self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims+emoji_feat_target_dims, output_size)
-            self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims)
-            self.emoji_layer = nn.Linear(300, emoji_feat_target_dims)
+            self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims+emoji_feat_target_dims, output_size).to(device)
+            self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims).to(device)
+            self.emoji_layer = nn.Linear(300, emoji_feat_target_dims).to(device)
         
         elif self.use_lexicons and not self.use_emojis:
             print('Using lexicons')
-            self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims, output_size)
-            self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims)
+            self.linear_1 = nn.Linear(hidden_size+lexicon_feat_target_dims, output_size).to(device)
+            self.lexicon_layer = nn.Linear(lexicon_feat_length, lexicon_feat_target_dims).to(device)
         
         elif self.use_emojis and not self.use_lexicons:
             print('Using emojis')
-            self.linear_1 = nn.Linear(hidden_size+emoji_feat_target_dims, output_size)
-            self.emoji_layer = nn.Linear(300, emoji_feat_target_dims)
+            self.linear_1 = nn.Linear(hidden_size+emoji_feat_target_dims, output_size).to(device)
+            self.emoji_layer = nn.Linear(300, emoji_feat_target_dims).to(device)
 
         else:
             print('Using basic RNN features')
-            self.linear_1 = nn.Linear(hidden_size, output_size)
+            self.linear_1 = nn.Linear(hidden_size, output_size).to(device)
 
     def decode(self, predict) :
         # predict = self.dropout(predict)
@@ -62,7 +62,7 @@ class AttnDecoder(nn.Module):
         if self.use_attention :
             output = data.hidden
             mask = data.masks
-            attn = self.attention(data.seq, output, mask)
+            attn = self.attention(data.seq.to(device), output, mask)
 
             context = (attn.unsqueeze(-1) * output).sum(1)
             data.attn = attn

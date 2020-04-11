@@ -15,8 +15,8 @@ class TanhAttention(nn.Module) :
         print("Using Softmax Attention")
         super().__init__()
         print("The hidden size is: ", hidden_size)
-        self.attn1 = nn.Linear(hidden_size, hidden_size // 2)
-        self.attn2 = nn.Linear(hidden_size // 2, 1, bias=False)
+        self.attn1 = nn.Linear(hidden_size, hidden_size // 2).to(device)
+        self.attn2 = nn.Linear(hidden_size // 2, 1, bias=False).to(device)
         
     def forward(self, input_seq, hidden, masks) :
         #input_seq = (B, L), hidden : (B, L, H), masks : (B, L)
