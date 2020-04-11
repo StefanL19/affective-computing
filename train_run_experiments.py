@@ -5,9 +5,9 @@ from hyperopt import fmin, tpe, hp, Trials
 
 def objective(space):
 
-    dataset = Dataset(name='twitter_joy', path='data/vectorizer_joy.pkl', min_length=None, train_lexicon_feat_path="data/joy/train/X_train_joy.txt", 
-                        test_lexicon_feat_path="data/joy/dev/X_dev_joy.txt", train_emoji_feat_path="data/joy/train/emoji_emb.txt",
-                        test_emoji_feat_path="data/joy/dev/emoji_emb.txt")
+    dataset = Dataset(name='twitter_anger', path='data/vectorizer_anger.pkl', min_length=None, train_lexicon_feat_path="data/anger/train/X_train_anger.txt", 
+                        test_lexicon_feat_path="data/anger/dev/X_dev_anger.txt", train_emoji_feat_path="data/anger/train/emoji_emb.txt",
+                        test_emoji_feat_path="data/anger/dev/emoji_emb.txt")
 
     params = {
         'vocab_size':dataset.vec.vocab_size,
@@ -30,7 +30,7 @@ def objective(space):
     
     space['result'] = best_result
 
-    with open('data/hyperopt_joy_results.txt', 'a') as f:
+    with open('data/hyperopt_anger_results.txt', 'a') as f:
         f.write(str(space))
         f.write('\n')
     

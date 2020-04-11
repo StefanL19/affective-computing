@@ -40,11 +40,11 @@ def extract_emojis_dataset(dataset_path:str, emoji2vec:dict):
 
     return np.array(emoji_embeddings)
 
-train_path = "data/joy/train/joy-ratings-0to1.train.txt"
-dev_path = "data/joy/dev/joy-ratings-0to1.dev.target.txt"
+train_path = "data/anger/train/anger-ratings-0to1.train.txt"
+dev_path = "data/anger/dev/anger-ratings-0to1.dev.target.txt"
 
-train_emoji_save_path = "data/joy/train/emoji_emb.txt"
-dev_emoji_save_path = "data/joy/dev/emoji_emb.txt"
+train_emoji_save_path = "data/anger/train/emoji_emb.txt"
+dev_emoji_save_path = "data/anger/dev/emoji_emb.txt"
 
 emoji2vec_embeddings = loadGloveModel("data/embeddings/emoji2vec.txt")
 
