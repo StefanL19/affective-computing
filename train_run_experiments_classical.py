@@ -15,6 +15,17 @@ from preprocess_data import loadGloveModel
 from tqdm import tqdm
 from sklearn.linear_model import LinearRegression
 from xgboost import XGBRegressor
+from sklearn.model_selection import cross_val_score
+from error_analysis import analyse_errors
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import make_scorer
+
+def pearson_r_loss(target, predictions):
+    print(target.shape)
+    print(predictions.shape)
+    pearson_r_res = pearsonr(predictions, target)
+    print(pearson_r_res)
+    return pearson_r_res[0]
 
 def read_data(data_path:str):
     tweets = []
@@ -126,17 +137,17 @@ def metrics(y_pred, y, print_metrics=False):
 
 def train_only_embeddings(train_data_path:str, train_labels_path:str, train_emojis_path:str, train_lexicon_path:str,
                         dev_data_path:str, dev_labels_path:str, dev_emojis_path:str, dev_lexicon_path:str,
-                        glove_model_path:str, model_name:str, use_emojis:bool, use_lexicon:bool, use_cross_validation:str):
+                        glove_model_path:str, model_name:str, use_emojis:bool, use_lexicon:bool):
 
     glove_model = loadGloveModel(glove_model_path)
     train_x, train_y = get_xy_emb(train_data_path, train_labels_path, train_emojis_path, train_lexicon_path, glove_model, use_emojis, use_lexicon)
     dev_x, dev_y = get_xy_emb(dev_data_path, dev_labels_path, dev_emojis_path, dev_lexicon_path, glove_model, use_emojis, use_lexicon)
-    
+
     all_metrics = []
-    for i in range(0,10):
+    for i in range(0,5):
         if model_name == "RandomForest":
             print("Using random forest model")
-            regr = RandomForestRegressor()
+            regr = RandomForestRegressor(n_estimators=250)
         elif model_name == "GradientBoostingRegressor":
             print("Using gradient boosting regressor")
             regr = GradientBoostingRegressor()
@@ -154,8 +165,34 @@ def train_only_embeddings(train_data_path:str, train_labels_path:str, train_emoj
 
         all_metrics.append(metrics_res[0])
     
+    final_predictions = regr.predict(dev_x)
     print("The mean pearson correlation is: ", np.mean(np.array(all_metrics)))
 
+    return final_predictions
+
+def search_params_embeddings(train_data_path:str, train_labels_path:str, train_emojis_path:str, train_lexicon_path:str,
+                        dev_data_path:str, dev_labels_path:str, dev_emojis_path:str, dev_lexicon_path:str,
+                        glove_model_path:str, model_name:str, use_emojis:bool, use_lexicon:bool):
+
+    glove_model = loadGloveModel(glove_model_path)
+    train_x, train_y = get_xy_emb(train_data_path, train_labels_path, train_emojis_path, train_lexicon_path, glove_model, use_emojis, use_lexicon)
+    dev_x, dev_y = get_xy_emb(dev_data_path, dev_labels_path, dev_emojis_path, dev_lexicon_path, glove_model, use_emojis, use_lexicon)
+
+    X = np.concatenate((train_x, dev_x))
+    y = np.concatenate((train_y, dev_y))
+
+    scorer = make_scorer(pearson_r_loss, greater_is_better=True)
+
+    tuned_parameters = {
+        "n_estimators":[50, 100, 150, 200, 250]
+    }
+
+    print("Loaded data")
+    grid = GridSearchCV(RandomForestRegressor(), param_grid=tuned_parameters, scoring=scorer, cv=10)
+
+    grid.fit(X, y)
+
+    print(grid.best_params_)
 
 def train_on_lstm_features(train_lstm_feats_path:str, train_labels_path:str, train_emojis_path:str, train_lexicon_path:str,
                         dev_lstm_feats_path:str, dev_labels_path:str, dev_emojis_path:str, dev_lexicon_path:str,
@@ -165,10 +202,11 @@ def train_on_lstm_features(train_lstm_feats_path:str, train_labels_path:str, tra
 
     
     all_metrics = []
+
     for i in range(0,5):
         if model_name == "RandomForest":
             print("Using random forest model")
-            regr = RandomForestRegressor(n_estimators=30)
+            regr = RandomForestRegressor(n_estimators=100)
         elif model_name == "GradientBoostingRegressor":
             print("Using gradient boosting regressor")
             regr = GradientBoostingRegressor()
@@ -185,12 +223,16 @@ def train_on_lstm_features(train_lstm_feats_path:str, train_labels_path:str, tra
     print("The mean pearson correlation is: ", np.mean(np.array(all_metrics)))
 
     
+# gs_intensities = read_labels("data/joy/dev/joy_dev_target.txt")
+# analyse_errors("data/joy/dev/joy-ratings-0to1.dev.target.txt", gs_intensities, 0)
 
+# search_params_embeddings("data/joy/train/joy_train_input.txt", "data/joy/train/joy_train_target.txt", "data/joy/train/emoji_emb.txt", "data/joy/train/X_train_joy.txt",
+#                          "data/joy/dev/joy_dev_input.txt", "data/joy/dev/joy_dev_target.txt", "data/joy/dev/emoji_emb.txt", "data/joy/dev/X_dev_joy.txt",
+#                          "data/embeddings/glove.twitter.27B.200d.txt", "RandomForest", True, True)
 
-emotion_type = "fear"
-use_lexicon = True
-use_emojis = True
-use_cross_validation = True
+emotion_type = "sadness"
+use_lexicon = False
+use_emojis = False
 
 # train_on_lstm_features("data/joy/train/lstm_features.txt", "data/joy/train/joy_train_target.txt", "data/joy/train/emoji_emb.txt", "data/joy/train/X_train_joy.txt",
 #                     "data/joy/dev/lstm_features.txt", "data/joy/dev/joy_dev_target.txt", "data/joy/dev/emoji_emb.txt", "data/joy/dev/X_dev_joy.txt",
@@ -198,24 +240,29 @@ use_cross_validation = True
 
 if emotion_type == "joy":
     print("Results for joy emotion type")
-    train_only_embeddings("data/joy/train/joy_train_input.txt", "data/joy/train/joy_train_target.txt", "data/joy/train/emoji_emb.txt", "data/joy/train/X_train_joy.txt",
+    dev_preds = train_only_embeddings("data/joy/train/joy_train_input.txt", "data/joy/train/joy_train_target.txt", "data/joy/train/emoji_emb.txt", "data/joy/train/X_train_joy.txt",
                         "data/joy/dev/joy_dev_input.txt", "data/joy/dev/joy_dev_target.txt", "data/joy/dev/emoji_emb.txt", "data/joy/dev/X_dev_joy.txt",
-                        "data/embeddings/glove.twitter.27B.200d.txt", "AdaBoostRegressor", use_emojis, use_lexicon, use_cross_validation)
+                        "data/embeddings/glove.twitter.27B.200d.txt", "RandomForest", use_emojis, use_lexicon)
+
+    gs_intensities = read_labels("data/joy/dev/joy_dev_target.txt")
+    gs_intensities = np.array(gs_intensities)
+    analyse_errors("data/joy/dev/joy-ratings-0to1.dev.target.txt", gs_intensities, dev_preds)
+
 
 elif emotion_type == "anger":
     print("Results for anger emotion type")
     train_only_embeddings("data/anger/train/anger_train_input.txt", "data/anger/train/anger_train_target.txt", "data/anger/train/emoji_emb.txt", "data/anger/train/X_train_anger.txt",
                         "data/anger/dev/anger_dev_input.txt", "data/anger/dev/anger_dev_target.txt", "data/anger/dev/emoji_emb.txt", "data/anger/dev/X_dev_anger.txt",
-                        "data/embeddings/glove.twitter.27B.200d.txt", "AdaBoostRegressor", use_emojis, use_lexicon, use_cross_validation)
+                        "data/embeddings/glove.twitter.27B.200d.txt", "RandomForest", use_emojis, use_lexicon)
 
 elif emotion_type == "sadness":
     print("Results for sadness emotion type")
     train_only_embeddings("data/sadness/train/sadness_train_input.txt", "data/sadness/train/sadness_train_target.txt", "data/sadness/train/emoji_emb.txt", "data/sadness/train/X_train_sadness.txt",
                         "data/sadness/dev/sadness_dev_input.txt", "data/sadness/dev/sadness_dev_target.txt", "data/sadness/dev/emoji_emb.txt", "data/sadness/dev/X_dev_sadness.txt",
-                        "data/embeddings/glove.twitter.27B.200d.txt", "AdaBoostRegressor", use_emojis, use_lexicon, use_cross_validation)
+                        "data/embeddings/glove.twitter.27B.200d.txt", "RandomForest", use_emojis, use_lexicon)
 
 elif emotion_type == "fear":
     print("Results for fear emotion type")
     train_only_embeddings("data/fear/train/fear_train_input.txt", "data/fear/train/fear_train_target.txt", "data/fear/train/emoji_emb.txt", "data/fear/train/X_train_fear.txt",
                         "data/fear/dev/fear_dev_input.txt", "data/fear/dev/fear_dev_target.txt", "data/fear/dev/emoji_emb.txt", "data/fear/dev/X_dev_fear.txt",
-                        "data/embeddings/glove.twitter.27B.200d.txt", "AdaBoostRegressor", use_emojis, use_lexicon, use_cross_validation)
+                        "data/embeddings/glove.twitter.27B.200d.txt", "RandomForest", use_emojis, use_lexicon)

@@ -16,6 +16,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 class BatchHolder() : 
     def __init__(self, data, data_lexicon, data_emoji) :
         maxlen = max([len(x) for x in data])
+
         self.maxlen = maxlen
         self.B = len(data)
 
