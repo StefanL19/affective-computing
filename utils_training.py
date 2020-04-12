@@ -22,6 +22,10 @@ class Trainer() :
         test_data = self.dataset.test_data
 
         test_metrics = []
+
+        context_vectors_best_train = []
+        context_vectors_best_test = []
+        best_pearson = -100.
         for i in tqdm(range(n_iters)):
             loss_total_batch, loss_total = self.model.train(train_data.X, train_data.y, train_data.lexicon_feat, train_data.emoji_feat)
 
@@ -29,13 +33,21 @@ class Trainer() :
             # print("The Average Loss per batch is: ", loss_total_batch)
             # print("The Total Loss is: ", loss_total)
 
-            predictions_test = self.model.evaluate(test_data.X, test_data.lexicon_feat, test_data.emoji_feat)
+            predictions_test, context_vectors_test = self.model.evaluate(test_data.X, test_data.lexicon_feat, test_data.emoji_feat)
+
+            predictions_train, context_vectors_train = self.model.evaluate(train_data.X, train_data.lexicon_feat, train_data.emoji_feat)
 
             predictions_test = np.array(predictions_test)
 
             pearson_r = self.metrics(np.array(test_data.y), predictions_test)
             
+            if pearson_r[0] >= best_pearson:
+                print("New best iteration")
+                best_pearson = pearson_r[0]
+                print(best_pearson)
+                context_vectors_best_train = context_vectors_train
+                context_vectors_best_test = context_vectors_test
+
             test_metrics.append(pearson_r[0])
 
-        return np.max(np.array(test_metrics))
-
+        return np.max(np.array(test_metrics)), context_vectors_best_train, context_vectors_best_test

@@ -69,6 +69,8 @@ class AttnDecoder(nn.Module):
         else :
             context = data.last_hidden
 
+        data.context = context
+
         context = self.dropout(context)
 
         if self.use_lexicons and self.use_emojis:

@@ -167,3 +167,5 @@ class Vectorizer:
                 freq[w] += 1
         freq = freq / np.sum(freq)
         self.freq = freq
+
+

@@ -38,6 +38,7 @@ class BatchHolder() :
 
         self.hidden = None
         self.predict = None
+        self.context = None
 
         self.inv_masks = ~self.masks
 

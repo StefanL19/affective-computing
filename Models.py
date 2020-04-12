@@ -101,6 +101,7 @@ class Model() :
         N = len(data)
 
         outputs = []
+        context_vectors = []
 
         for n in tqdm(range(0, N, bsize)) :
             batch_doc = data[n:n+bsize]
@@ -113,9 +114,12 @@ class Model() :
             self.decoder(batch_data)
 
             predict = batch_data.predict.cpu().data.numpy()
-            
+            context = batch_data.context.cpu().data.numpy()
+
             outputs.append(predict)
+            context_vectors.append(context)
+
 
         outputs = [x for y in outputs for x in y]
 
-        return outputs
+        return outputs, context_vectors
