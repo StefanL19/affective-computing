@@ -20,7 +20,7 @@ class EncoderRNN(nn.Module) :
             weight[0, :].zero_()
 
             self.embedding = nn.Embedding(vocab_size, embed_size, _weight=weight, padding_idx=0).to(device)
-            #freeze_layer(self.embedding)
+            # freeze_layer(self.embedding)
             
         else :
             print("Not setting Embedding")
@@ -35,8 +35,13 @@ class EncoderRNN(nn.Module) :
         seq = data.seq
         seq = seq.to(device)
         lengths = data.lengths
+        
         embedding = self.embedding(seq) #(B, L, E)
+
+        data.embeddings = embedding
+
         packseq = nn.utils.rnn.pack_padded_sequence(embedding, lengths, batch_first=True, enforce_sorted=False).to(device)
+
         output, (h, c) = self.rnn(packseq)
 
         output, lengths = nn.utils.rnn.pad_packed_sequence(output, batch_first=True, padding_value=0)

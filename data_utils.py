@@ -51,7 +51,7 @@ class Dataset() :
 
         X, y = filterbylength(X, y, min_length=0, max_length=1000)
         Xt, yt = filterbylength(Xt, yt, min_length=0, max_length=1000)
-        Xt, yt = sortbylength(Xt, yt)
+        # Xt, yt = sortbylength(Xt, yt)
 
 
         X_train_lexicon = np.array([])

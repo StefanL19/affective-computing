@@ -40,7 +40,7 @@ class BatchHolder() :
         self.hidden = None
         self.predict = None
         self.context = None
-
+        self.embeddings = None
         self.inv_masks = ~self.masks
 
     def generate_frozen_uniform_attn(self):

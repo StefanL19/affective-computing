@@ -36,17 +36,13 @@ class AttnDecoder(nn.Module):
 
         self.output_activation = torch.nn.Sigmoid()
 
-        # self.conv_1 = Conv1dSamePad(in_channels=128, out_channels=1, filter_len=1)
-        # self.conv_2 = Conv1dSamePad(in_channels=128, out_channels=1, filter_len=2)
-        # self.conv_3 = Conv1dSamePad(in_channels=128, out_channels=1, filter_len=3)
-
         if self.use_lexicons and self.use_emojis:
             print('Using lexicons and emojis')
-            self.linear_1 = nn.Linear(hidden_size+300+53, output_size).to(device)
+            self.linear_1 = nn.Linear(hidden_size+300+38, output_size).to(device)
         
         elif self.use_lexicons and not self.use_emojis:
             print('Using lexicons')
-            self.linear_1 = nn.Linear(hidden_size+53, output_size).to(device)
+            self.linear_1 = nn.Linear(hidden_size+38, output_size).to(device)
         
         elif self.use_emojis and not self.use_lexicons:
             print('Using emojis')
@@ -57,7 +53,6 @@ class AttnDecoder(nn.Module):
             self.linear_1 = nn.Linear(hidden_size, output_size).to(device)
 
     def decode(self, predict) :
-        # predict = self.dropout(predict)
         predict = self.linear_1(predict)
         predict = self.output_activation(predict)
         return predict
@@ -69,8 +64,6 @@ class AttnDecoder(nn.Module):
             attn = self.attention(data.seq.to(device), output, mask)
 
             context = (attn.unsqueeze(-1) * output).sum(1)
-            
-
             data.attn = attn
         else :
             context = data.last_hidden
@@ -80,7 +73,7 @@ class AttnDecoder(nn.Module):
         context = self.dropout(context)
 
         if self.use_lexicons and self.use_emojis:
-            emoji_features = self.emoji_layer(data.emoji_feats.to(device))
+            emoji_features = data.emoji_feats.to(device)
             emoji_features  = nn.functional.relu(emoji_features)
 
             lexicon_features = data.lexicon_feats.to(device)

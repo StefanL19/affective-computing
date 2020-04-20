@@ -58,27 +58,30 @@ def run_hyperopt():
 
 def run_training():
 
-    dataset = Dataset(name='twitter_joy', path='data/vectorizer_joy.pkl', min_length=None, train_lexicon_feat_path="data/joy/train/X_train_joy.txt", 
-                        test_lexicon_feat_path="data/joy/dev/X_dev_joy.txt", train_emoji_feat_path="data/joy/train/emoji_emb.txt",
-                        test_emoji_feat_path="data/joy/dev/emoji_emb.txt")
+    dataset = Dataset(name='twitter_fear', path='data/vectorizer_fear.pkl', min_length=None, train_lexicon_feat_path="data/fear/train/X_train_fear_optim.txt", 
+                        test_lexicon_feat_path="data/fear/dev/X_dev_fear_optim.txt", train_emoji_feat_path="data/fear/train/emoji_emb.txt",
+                        test_emoji_feat_path="data/fear/dev/emoji_emb.txt")
 
     params = {
         'vocab_size':dataset.vec.vocab_size,
         'embed_size':200,
         'hidden_size':64,
-        'bsize':32,
+        'bsize':8,
         'use_lexicons':False,
         'use_emojis':False,
         'lex_feat_length':53,
         'use_attention':True,
         'lexicon_feat_target_dims':10,
         'emoji_feat_target_dims':10,
-        'dropout_prob':0.3
+        'dropout_prob':0.5,
+        'test_predictions_save_path':'data/predictions/lstm_fear.txt',
+        'train_context_features_save_path':'data/fear/train/lstm_features.txt',
+        'test_context_features_save_path':'data/fear/dev/lstm_features.txt'
     }
 
     trainer = Trainer(dataset, params)
 
-    best_result, context_vectors_best_train, context_vectors_best_test = trainer.train(n_iters=70, save_on_metric='roc_auc')
+    best_result, context_vectors_best_train, context_vectors_best_test = trainer.train(n_iters=45, save_on_metric='roc_auc')
 
     context_vectors_best_train = np.concatenate(context_vectors_best_train, axis=0)
 
@@ -86,7 +89,7 @@ def run_training():
 
     print(best_result)
 
-    np.savetxt("data/joy/train/lstm_features.txt", context_vectors_best_train)
-    np.savetxt("data/joy/dev/lstm_features.txt", context_vectors_best_test)
+
+
 
 run_training()

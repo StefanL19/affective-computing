@@ -6,11 +6,15 @@ def analyse_errors(validation_set_path, gs_intensities, model_predictions):
     df = pd.read_csv(validation_set_path, header=None, sep='\t')
     tweets = df[1]
 
-    prediction_differences = np.abs(model_predictions - gs_intensities)
+    prediction_differences = list(np.abs(model_predictions - gs_intensities))
+    tweets = list(tweets)
+    gt_predictions = list(gs_intensities)
+    model_predictions = list(model_predictions) 
 
-    tweet_diffs = dict(zip(tweets, list(prediction_differences)))
 
-    tweet_diffs = sorted(tweet_diffs.items(), key=operator.itemgetter(1))
+    df_predictions = pd.DataFrame({"tweets":tweets, "prediction_differences":prediction_differences, 
+    "ground_truth":gt_predictions, "model_predictions":model_predictions})
 
-    top_preds = tweet_diffs[:5]
-    bottom_preds = tweet_diffs[-5:]
+    df_predictions = df_predictions.sort_values(by=["prediction_differences"])
+
+    return df_predictions

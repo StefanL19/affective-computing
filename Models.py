@@ -102,6 +102,7 @@ class Model() :
 
         outputs = []
         context_vectors = []
+        embedding_vectors = []
 
         for n in tqdm(range(0, N, bsize)) :
             batch_doc = data[n:n+bsize]
@@ -112,14 +113,17 @@ class Model() :
 
             self.encoder(batch_data)
             self.decoder(batch_data)
-
+            
             predict = batch_data.predict.cpu().data.numpy()
             context = batch_data.context.cpu().data.numpy()
 
+            embedding_vector = batch_data.embeddings.cpu().data.detach().numpy().sum(axis=1)
+
             outputs.append(predict)
             context_vectors.append(context)
+            embedding_vectors.append(embedding_vector)
 
 
         outputs = [x for y in outputs for x in y]
-
-        return outputs, context_vectors
+        
+        return outputs, context_vectors, embedding_vectors

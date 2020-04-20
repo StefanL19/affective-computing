@@ -20,10 +20,11 @@ def replace_emojis(doc):
     return doc
 
 if __name__ == "__main__":
-    train_texts_data_path = "data/fear/train/fear_train_input.txt"
-    train_scores_data_path = "data/fear/train/fear_train_target.txt" 
-    dev_texts_data_path = "data/fear/dev/fear_dev_input.txt"
-    dev_scores_data_path = "data/fear/dev/fear_dev_target.txt"
+    train_texts_data_path = "data/sadness/train/sadness_train_input.txt"
+    train_scores_data_path = "data/sadness/train/sadness_train_target.txt" 
+    dev_texts_data_path = "data/sadness/dev/sadness_dev_input.txt"
+    dev_scores_data_path = "data/sadness/dev/sadness_dev_target.txt"
+    save_vectorizer_path = "data/vectorizer_sadness.pkl"
 
     with open(train_texts_data_path) as f_train:
         train_texts_content = f_train.readlines()
@@ -72,4 +73,4 @@ if __name__ == "__main__":
     vec.extract_embeddings(pre_trained_embeddings, 200)
 
     import pickle, os
-    pickle.dump(vec, open("data/vectorizer_fear.pkl", 'wb'))
+    pickle.dump(vec, open(save_vectorizer_path, 'wb'))
