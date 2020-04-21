@@ -17,7 +17,9 @@ It will be easier to use the repository if you stick to the path conventions whi
 
 ## Train LSTM model
 Use the script `train_run_experiments.py`
-In order to train an LSTM model on one of the emotion types and save the its, predictions, and cotext features on the train and test set run the script
+* Prepare a vectorizer file for the target emotion type (refer to the Data Processing  Section of this file)
+
+* To train an LSTM model on one of the emotion types and save the its, predictions, and cotext features on the train and test set run the script
 and change the correspond parameters in the `run_training` function. This is the description of the parameters which should be change more often:
 
 When instantiating the `Dataset` class:
